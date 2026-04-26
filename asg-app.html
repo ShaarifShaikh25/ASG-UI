@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ASG App — Apex Startup Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET & TOKENS ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange-start:#FF8A00;
+  --orange-end:#FF3D00;
+  --orange-gradient:linear-gradient(180deg,var(--orange-start) 0%,var(--orange-end) 100%);
+  --orange-gradient-soft:linear-gradient(180deg,rgba(255,138,0,.2) 0%,rgba(255,61,0,.2) 100%);
+  --orange:#FF5A14;
+  --orange-light:#FFF0E5;
+  --orange-mid:#FF7A2B;
+  --orange-dark:#E24200;
+  --black:#0D0D0D;
+  --black2:#1A1A1A;
+  --gray-1:#F7F7F7;
+  --gray-2:#EDEDED;
+  --gray-3:#D4D4D4;
+  --gray-4:#9A9A9A;
+  --white:#FFFFFF;
+  --sidebar-w:240px;
+  --topbar-h:60px;
+  --radius:10px;
+  --radius-lg:16px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-md:0 4px 24px rgba(0,0,0,.12);
+  --font-display:'Montserrat',sans-serif;
+  --font-body:'Plus Jakarta Sans',sans-serif;
+  font-family:var(--font-body);
+}
+
+body{background:var(--gray-1);color:var(--black);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4,.brand{font-family:var(--font-display)}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit;border:none;outline:none}
+input,select,textarea{font-family:inherit;outline:none;border:none}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* ── LAYOUT SHELL ── */
+.shell{display:flex;min-height:100vh}
+
+/* ── SIDEBAR (desktop) ── */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--black);
+  position:fixed;
+  top:0;left:0;bottom:0;
+  display:flex;flex-direction:column;
+  z-index:100;
+  transition:transform .3s;
+}
+.sidebar-logo{
+  padding:22px 20px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sidebar-logo .brand{
+  color:var(--white);
+  font-size:1.25rem;
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+.sidebar-logo span{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.sidebar-logo .tagline{color:var(--gray-4);font-size:.7rem;margin-top:2px;font-weight:400}
+
+.sidebar-nav{flex:1;padding:16px 0;overflow-y:auto}
+.nav-section-label{
+  color:var(--gray-4);
+  font-size:.65rem;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  padding:12px 20px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 20px;
+  color:rgba(255,255,255,.6);
+  font-size:.85rem;
+  font-weight:500;
+  border-left:3px solid transparent;
+  transition:all .15s;
+  cursor:pointer;
+}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.nav-item.active{
+  color:var(--white);
+  background:var(--orange-gradient-soft);
+  border-left-color:var(--orange-end);
+}
+.nav-item .icon{width:18px;height:18px;flex-shrink:0}
+
+.sidebar-user{
+  padding:16px 20px;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+}
+.user-avatar-sm{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--orange-gradient);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--white);font-size:.8rem;font-weight:700;
+  font-family:var(--font-display);flex-shrink:0;
+}
+.user-name-sm{color:var(--white);font-size:.8rem;font-weight:600}
+.user-role-sm{color:var(--gray-4);font-size:.68rem}
+
+/* ── MAIN CONTENT ── */
+.main-content{
+  margin-left:var(--sidebar-w);
+  flex:1;
+  display:flex;flex-direction:column;
+  min-height:100vh;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:var(--topbar-h);
+  background:var(--white);
+  border-bottom:1px solid var(--gray-2);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-title{font-family:var(--font-display);font-size:1rem;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-notif{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--gray-1);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;cursor:pointer;
+  border:1px solid var(--gray-2);
+}
+.notif-dot{
+  width:8px;height:8px;background:var(--orange-gradient);
+  border-radius:50%;position:absolute;top:6px;right:6px;
+  border:2px solid var(--white);
+}
+.page-content{padding:24px;flex:1}
+
+/* ── BOTTOM NAV (mobile) ── */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--black);
+  border-top:1px solid rgba(255,255,255,.08);
+  z-index:100;
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+}
+.bottom-nav-items{display:flex;justify-content:space-around}
+.bn-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 12px;color:rgba(255,255,255,.5);
+  font-size:.62rem;font-weight:600;cursor:pointer;
+  transition:color .15s;
+  border:none;background:none;
+}
+.bn-item.active{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.bn-item svg{width:20px;height:20px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 20px;border-radius:var(--radius);
+  font-size:.85rem;font-weight:600;
+  font-family:var(--font-display);
+  letter-spacing:.01em;
+  transition:all .15s;cursor:pointer;border:none;
+}
+.btn-primary{background:var(--orange-gradient);color:var(--white)}
+.btn-primary:hover{filter:brightness(.95)}
+.btn-secondary{background:var(--gray-2);color:var(--black)}
+.btn-secondary:hover{background:var(--gray-3)}
+.btn-outline{background:transparent;border:1.5px solid var(--orange-end);color:var(--orange-end)}
+.btn-outline:hover{background:var(--orange-light)}
+.btn-dark{background:var(--black);color:var(--white)}
+.btn-dark:hover{background:var(--black2)}
+.btn-sm{padding:7px 14px;font-size:.78rem}
+.btn-lg{padding:13px 28px;font-size:.95rem}
+.btn-full{width:100%}
+.btn-icon{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--gray-2);border:none;cursor:pointer;
+}
+
+/* ── CARDS ── */
+.card{
+  background:var(--white);
+  border-radius:var(--radius-lg);
+  border:1px solid var(--gray-2);
+  overflow:hidden;
+}
+.card-body{padding:20px}
+.card-sm .card-body{padding:16px}
+
+.section-title{
+  font-family:var(--font-display);
+  font-size:1.1rem;font-weight:700;
+  margin-bottom:16px;
+}
+.section-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.see-all{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  font-size:.8rem;font-weight:600;cursor:pointer;
+}
+.see-all:hover{text-decoration:underline}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:100px;
+  font-size:.68rem;font-weight:700;
+  letter-spacing:.02em;
+}
+.badge-orange{background:var(--orange-light);color:var(--orange-dark)}
+.badge-black{background:var(--black);color:var(--white)}
+.badge-gray{background:var(--gray-2);color:var(--gray-4)}
+.badge-green{background:#E8F5E9;color:#2E7D32}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:16px}
+.form-label{
+  display:block;font-size:.78rem;font-weight:600;
+  color:var(--black2);margin-bottom:6px;
+}
+.form-input{
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--gray-3);
+  border-radius:var(--radius);
+  font-size:.88rem;color:var(--black);
+  background:var(--white);
+  transition:border-color .15s;
+}
+.form-input:focus{border-color:var(--orange-end)}
+.form-input::placeholder{color:var(--gray-4)}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%239A9A9A' d='M8 10L3 5h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px}
+textarea.form-input{resize:vertical;min-height:90px}
+
+/* ─────────────── LOGIN SCREEN ─────────────── */
+#screen-login{
+  min-height:100vh;
+  display:none;
+  background:var(--black);
+  align-items:center;justify-content:center;
+}
+#screen-login.active{display:flex}
+.login-wrap{
+  display:flex;width:100%;max-width:900px;
+  min-height:520px;border-radius:24px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.login-left{
+  flex:1;background:var(--orange-gradient);
+  padding:48px 40px;
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.login-left .brand{color:var(--white);font-size:2rem;font-weight:800}
+.login-left .brand span{color:var(--black)}
+.login-tagline{color:rgba(255,255,255,.85);font-size:1rem;margin-top:12px;line-height:1.6}
+.login-features{margin-top:auto}
+.login-feat{
+  display:flex;align-items:center;gap:10px;
+  color:rgba(255,255,255,.9);font-size:.85rem;margin-bottom:12px;
+}
+.feat-dot{width:8px;height:8px;border-radius:50%;background:var(--black);flex-shrink:0}
+
+.login-right{
+  flex:1;background:var(--white);
+  padding:48px 40px;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.login-tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--gray-2)}
+.login-tab{
+  padding:10px 20px;font-size:.9rem;font-weight:700;
+  color:var(--gray-4);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;
+  font-family:var(--font-display);
+  background:none;border-top:none;border-left:none;border-right:none;
+  transition:all .15s;
+}
+.login-tab.active{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  border-bottom-color:var(--orange-end);
+}
+
+.login-form{display:none}
+.login-form.active{display:block}
+.login-form h2{font-size:1.5rem;font-weight:800;margin-bottom:4px}
+.login-form p{color:var(--gray-4);font-size:.85rem;margin-bottom:24px}
+
+.login-divider{
+  text-align:center;color:var(--gray-4);font-size:.78rem;
+  margin:16px 0;position:relative;
+}
+.login-divider::before,.login-divider::after{
+  content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--gray-2);
+}
+.login-divider::before{left:0}
+.login-divider::after{right:0}
+
+/* ─────────────── DASHBOARD ─────────────── */
+.dash-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:auto;
+  gap:16px;
+}
+.dash-col-wide{grid-column:span 2}
+.stats-row{display:flex;gap:12px;margin-bottom:16px}
+.stat-card{
+  flex:1;background:var(--white);
+  border-radius:var(--radius-lg);border:1px solid var(--gray-2);
+  padding:16px;
+}
+.stat-val{font-family:var(--font-display);font-size:1.8rem;font-weight:800}
+.stat-val span{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.stat-lbl{color:var(--gray-4);font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+.news-item{
+  padding:14px 0;border-bottom:1px solid var(--gray-2);
+}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-title{font-size:.88rem;font-weight:600;margin-bottom:3px}
+.news-meta{color:var(--gray-4);font-size:.72rem}
+
+.ask-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid var(--gray-2);
+}
+.ask-item:last-child{border-bottom:none}
+.ask-text{font-size:.85rem;font-weight:500}
+.ask-author{color:var(--gray-4);font-size:.72rem;margin-top:2px}
+
+.wof-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--gray-2);
+}
+.wof-item:last-child{border-bottom:none}
+.wof-avatar{
+  width:42px;height:42px;border-radius:10px;
+  background:var(--gray-2);overflow:hidden;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:800;color:var(--gray-4);
+}
+.wof-name{font-size:.88rem;font-weight:700}
+.wof-desc{color:var(--gray-4);font-size:.72rem;margin-top:2px}
+
+.event-pill{
+  padding:14px;border-radius:var(--radius);
+  border:1px solid var(--gray-2);margin-bottom:10px;
+  background:var(--white);
+  border-left:4px solid var(--orange-end);
+  transition:box-shadow .15s;cursor:pointer;
+}
+.event-pill:hover{box-shadow:var(--shadow)}
+.event-pill:last-child{margin-bottom:0}
+.event-title{font-size:.88rem;font-weight:700}
+.event-date{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  font-size:.75rem;font-weight:600;margin:4px 0;
+}
+.event-loc{color:var(--gray-4);font-size:.73rem}
+
+/* ─────────────── AI AGENT ─────────────── */
+.ai-hero{
+  background:var(--black);
+  border-radius:var(--radius-lg);
+  padding:28px;margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.ai-hero::before{
+  content:'';position:absolute;
+  top:-60px;right:-60px;
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(255,138,0,.3) 0%,rgba(255,61,0,.2) 45%,transparent 72%);
+}
+.ai-hero h2{color:var(--white);font-size:1.3rem;font-weight:800;margin-bottom:8px}
+.ai-hero p{color:rgba(255,255,255,.6);font-size:.85rem;line-height:1.6}
+.ai-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--orange-gradient-soft);border:1px solid rgba(255,61,0,.35);
+  color:var(--orange-end);padding:4px 12px;border-radius:100px;
+  font-size:.72rem;font-weight:700;margin-bottom:12px;
+}
+.ai-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--orange-gradient);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.input-method-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.input-method-card{
+  background:var(--white);border-radius:var(--radius-lg);
+  border:1.5px solid var(--gray-2);padding:18px;
+  cursor:pointer;transition:all .15s;
+}
+.input-method-card:hover,.input-method-card.selected{
+  border-color:var(--orange-end);background:var(--orange-light);
+}
+.method-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--gray-1);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:10px;
+  border:1px solid var(--gray-2);
+}
+.input-method-card.selected .method-icon{background:var(--orange-gradient);border-color:var(--orange-end)}
+.input-method-card.selected .method-icon svg{color:var(--white)}
+.method-name{font-size:.88rem;font-weight:700;margin-bottom:3px}
+.method-desc{color:var(--gray-4);font-size:.72rem}
+
+.ai-text-input-area{
+  background:var(--white);border-radius:var(--radius-lg);
+  border:1.5px solid var(--gray-2);padding:16px;
+  margin-bottom:12px;min-height:120px;
+  font-size:.88rem;color:var(--black);
+  resize:none;width:100%;
+  transition:border-color .15s;
+}
+.ai-text-input-area:focus{border-color:var(--orange-end);outline:none}
+.ai-text-input-area::placeholder{color:var(--gray-4)}
+
+.context-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{
+  padding:6px 14px;border-radius:100px;
+  border:1.5px solid var(--gray-3);
+  font-size:.75rem;font-weight:600;cursor:pointer;
+  background:var(--white);transition:all .15s;
+  color:var(--gray-4);
+}
+.chip.active,.chip:hover{border-color:var(--orange-end);color:var(--orange-end);background:var(--orange-light)}
+
+.voice-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:16px;
+  background:var(--black);border-radius:var(--radius-lg);
+  color:var(--white);font-size:.9rem;font-weight:700;
+  cursor:pointer;border:none;
+  font-family:var(--font-display);
+  transition:background .15s;margin-bottom:8px;
+}
+.voice-btn:hover{background:var(--black2)}
+.voice-btn.recording{background:var(--orange-gradient)}
+
+.upload-zone{
+  border:2px dashed var(--gray-3);
+  border-radius:var(--radius-lg);
+  padding:28px;text-align:center;
+  cursor:pointer;transition:all .15s;
+  background:var(--white);margin-bottom:8px;
+}
+.upload-zone:hover{border-color:var(--orange-end);background:var(--orange-light)}
+.upload-zone-icon{color:var(--gray-4);margin-bottom:8px}
+.upload-zone-text{font-size:.85rem;font-weight:600;color:var(--gray-4)}
+.upload-zone-sub{font-size:.72rem;color:var(--gray-3)}
+
+/* ─────────────── EVENTS ─────────────── */
+.events-filter{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px}
+.filter-btn{
+  padding:7px 16px;border-radius:100px;
+  border:1.5px solid var(--gray-3);
+  font-size:.8rem;font-weight:600;cursor:pointer;
+  background:var(--white);white-space:nowrap;
+  transition:all .15s;
+}
+.filter-btn.active{background:var(--orange-gradient);border-color:var(--orange-end);color:var(--white)}
+
+.event-card{
+  background:var(--white);border-radius:var(--radius-lg);
+  border:1px solid var(--gray-2);overflow:hidden;
+  margin-bottom:14px;transition:box-shadow .15s;
+}
+.event-card:hover{box-shadow:var(--shadow)}
+.event-card-top{
+  background:var(--black);padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.event-card-type{
+  font-size:.7rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.event-card-date-chip{
+  background:rgba(255,255,255,.1);
+  color:var(--white);font-size:.75rem;font-weight:600;
+  padding:3px 10px;border-radius:100px;
+}
+.event-card-body{padding:18px 20px}
+.event-card-title{font-family:var(--font-display);font-size:1rem;font-weight:700;margin-bottom:6px}
+.event-card-desc{color:var(--gray-4);font-size:.8rem;line-height:1.6;margin-bottom:14px}
+.event-card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;border-top:1px solid var(--gray-2);
+  background:var(--gray-1);
+}
+.event-card-loc{display:flex;align-items:center;gap:6px;color:var(--gray-4);font-size:.78rem}
+
+/* Inline orange accents converted to gradient where possible */
+[style*="color:var(--orange)"],
+[style*="color:var(--orange-mid)"]{
+  background:var(--orange-gradient);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent !important;
+}
+[style*="background:var(--orange)"]{
+  background:var(--orange-gradient) !important;
+}
+
+/* ─────────────── COMMITTEES ─────────────── */
+.committee-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;border-bottom:1px solid var(--gray-2);
+}
+.committee-item:last-child{border-bottom:none}
+.committee-name{font-size:.88rem;font-weight:600}
+.committee-dept{color:var(--gray-4);font-size:.72rem;margin-top:2px}
+
+.repo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.repo-card{
+  background:var(--gray-1);border-radius:var(--radius);
+  border:1px solid var(--gray-2);
+  padding:14px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all .15s;cursor:pointer;
+}
+.repo-card:hover{border-color:var(--orange-end);background:var(--orange-light)}
+.repo-label{font-size:.85rem;font-weight:700}
+.repo-sub{color:var(--gray-4);font-size:.7rem;margin-top:2px}
+.repo-tag{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--orange-gradient);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--white);font-family:var(--font-display);font-weight:800;font-size:.85rem;
+  flex-shrink:0;
+}
+
+/* ─────────────── EVENT REGISTRATION ─────────────── */
+.reg-hero{
+  background:var(--black);border-radius:var(--radius-lg);
+  padding:24px;margin-bottom:20px;
+}
+.reg-hero h2{color:var(--white);font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.reg-hero p{color:rgba(255,255,255,.5);font-size:.8rem}
+.reg-event-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--orange-gradient-soft);border:1px solid rgba(255,61,0,.35);
+  color:var(--orange-mid);font-size:.72rem;font-weight:700;
+  padding:4px 12px;border-radius:100px;margin-bottom:12px;
+}
+
+.team-toggle{
+  display:flex;gap:8px;margin-bottom:16px;
+}
+.team-toggle-btn{
+  flex:1;padding:10px;border-radius:var(--radius);
+  border:1.5px solid var(--gray-3);
+  background:var(--white);font-size:.82rem;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.team-toggle-btn.active{border-color:var(--orange-end);background:var(--orange-light);color:var(--orange-end)}
+
+/* ─────────────── HOST EVENT ─────────────── */
+.host-tabs{
+  display:flex;gap:8px;margin-bottom:20px;
+}
+.host-tab-btn{
+  flex:1;padding:10px;border-radius:var(--radius);
+  border:1.5px solid var(--gray-3);
+  background:var(--white);font-size:.82rem;font-weight:700;
+  cursor:pointer;transition:all .15s;
+  font-family:var(--font-display);
+}
+.host-tab-btn.active{
+  background:var(--black);border-color:var(--black);color:var(--white);
+}
+
+.option-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px;border-radius:var(--radius);
+  border:1.5px solid var(--gray-2);background:var(--white);margin-bottom:10px;
+}
+.option-row-left .option-title{font-size:.88rem;font-weight:600}
+.option-row-left .option-desc{color:var(--gray-4);font-size:.72rem;margin-top:2px}
+
+/* Toggle switch */
+.toggle-switch{
+  width:44px;height:24px;border-radius:100px;
+  background:var(--gray-3);position:relative;
+  cursor:pointer;transition:background .15s;flex-shrink:0;
+}
+.toggle-switch.on{background:var(--orange-gradient)}
+.toggle-knob{
+  width:18px;height:18px;border-radius:50%;
+  background:var(--white);position:absolute;
+  top:3px;left:3px;transition:transform .15s;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.toggle-switch.on .toggle-knob{transform:translateX(20px)}
+
+/* ─────────────── PROFILE ─────────────── */
+.profile-header{
+  background:var(--black);border-radius:var(--radius-lg);
+  padding:28px;display:flex;align-items:center;gap:20px;
+  margin-bottom:16px;
+}
+.profile-avatar{
+  width:72px;height:72px;border-radius:var(--radius-lg);
+  background:var(--orange-gradient);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:1.8rem;font-weight:800;
+  color:var(--white);flex-shrink:0;
+}
+.profile-name{color:var(--white);font-family:var(--font-display);font-size:1.2rem;font-weight:800}
+.profile-role{color:rgba(255,255,255,.5);font-size:.8rem;margin-top:4px}
+.profile-badges{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+.profile-section{
+  background:var(--white);border-radius:var(--radius-lg);
+  border:1px solid var(--gray-2);margin-bottom:14px;
+}
+.profile-section-header{
+  padding:14px 20px;border-bottom:1px solid var(--gray-2);
+  font-family:var(--font-display);font-size:.9rem;font-weight:700;
+}
+.profile-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 20px;border-bottom:1px solid var(--gray-2);font-size:.85rem;
+}
+.profile-row:last-child{border-bottom:none}
+.profile-row-label{color:var(--gray-4);font-size:.78rem;font-weight:500}
+.profile-row-val{font-weight:600}
+
+/* ─────────────── RESPONSIVE ─────────────── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main-content{margin-left:0;padding-bottom:70px}
+  .bottom-nav{display:block}
+  .topbar{padding:0 16px}
+  .page-content{padding:14px}
+  .dash-grid{grid-template-columns:1fr}
+  .dash-col-wide{grid-column:span 1}
+  .stats-row{flex-wrap:wrap}
+  .input-method-grid{grid-template-columns:1fr 1fr}
+  .repo-grid{grid-template-columns:1fr 1fr}
+  .login-wrap{flex-direction:column;border-radius:0;min-height:100vh}
+  .login-left{padding:32px 24px;flex:0}
+  .login-right{padding:28px 24px}
+  .login-features{display:none}
+  #screen-login{align-items:flex-start}
+}
+@media(min-width:1024px){
+  .dash-grid{grid-template-columns:1fr 1fr 1fr}
+  .input-method-grid{grid-template-columns:1fr 1fr 1fr 1fr}
+}
+
+/* ── OVERLAY for sidebar on mobile ── */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;
+}
+.sidebar-overlay.show{display:block}
+
+/* ── Hamburger ── */
+.hamburger{
+  display:none;width:36px;height:36px;
+  align-items:center;justify-content:center;
+  cursor:pointer;background:none;border:none;
+  flex-direction:column;gap:5px;
+}
+.hamburger span{display:block;width:20px;height:2px;background:var(--black);border-radius:2px}
+@media(max-width:768px){.hamburger{display:flex}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-left">
+      <div>
+        <div class="brand">ASG<span>.</span></div>
+        <div class="tagline" style="font-size:.85rem;margin-top:8px;color:rgba(255,255,255,.8)">Apex Startup Group — Building the district's most powerful student innovation ecosystem.</div>
+      </div>
+      <div class="login-features">
+        <div class="login-feat"><span class="feat-dot"></span>AI-powered mentorship matching</div>
+        <div class="login-feat"><span class="feat-dot"></span>Hackathons & events platform</div>
+        <div class="login-feat"><span class="feat-dot"></span>District-wide talent repositories</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="switchLoginTab('login')">Login</button>
+        <button class="login-tab" onclick="switchLoginTab('register')">Register</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div class="login-form active" id="lf-login">
+        <h2>Welcome back</h2>
+        <p>Log in to your ASG account</p>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" placeholder="you@college.edu"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" placeholder="••••••••"/>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+          <span style="color:var(--orange);font-size:.78rem;font-weight:600;cursor:pointer">Forgot password?</span>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" onclick="goToApp()">Login →</button>
+        <div class="login-divider">or continue with</div>
+        <button class="btn btn-dark btn-full" style="gap:8px" onclick="goToApp()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 12.713l-11.985-9.713h23.97zm-5.425-1.222l-6.575-5.329v12.501zm10.85 0l6.575 7.172v-12.501zm-1.557 1.261l-3.868 4.135-3.868-4.135-6.575 7.248h20.886z"/></svg>
+          Continue with College SSO
+        </button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div class="login-form" id="lf-register">
+        <h2>Create Account</h2>
+        <p>Join the ASG ecosystem today</p>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" type="text" placeholder="Arjun Sharma"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" placeholder="arjun@college.edu"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input">
+            <option>Student</option>
+            <option>Alumni</option>
+            <option>Faculty</option>
+            <option>Non-Student</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" placeholder="Min 8 characters"/>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" onclick="goToApp()">Create Account →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ APP SHELL ═══════════ -->
+<div class="screen" id="screen-app">
+  <div class="shell">
+
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="brand">ASG<span style="color:var(--orange)">.</span></div>
+        <div class="tagline">Apex Startup Group</div>
+      </div>
+
+      <div class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <div class="nav-item active" onclick="showSection('dashboard',this)">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item" onclick="showSection('ai-agent',this)">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          AI Agent
+        </div>
+        <div class="nav-item" onclick="showSection('events',this)">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+          Events & Meetups
+        </div>
+        <div class="nav-section-label" style="margin-top:8px">Community</div>
+        <div class="nav-item" onclick="showSection('committees',this)">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>
+          Committees
+        </div>
+        <div class="nav-item" onclick="showSection('event-host',this)">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"/></svg>
+          Host Event
+        </div>
+        <div class="nav-item" onclick="showSection('event-register',this)">
+          <svg class="icon" viewBox="0 0 20 20" fill="currentColor"><path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/></svg>
+          Register for Event
+        </div>
+      </div>
+
+      <div class="sidebar-user" onclick="showSection('profile',document.querySelector('.nav-item.active'))">
+        <div class="user-avatar-sm">A</div>
+        <div>
+          <div class="user-name-sm">Arjun Sharma</div>
+          <div class="user-role-sm">R2 Student · Founder</div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- TOPBAR -->
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="hamburger" onclick="openSidebar()">
+            <span></span><span></span><span></span>
+          </button>
+          <div class="topbar-title" id="topbar-title">Dashboard</div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-notif">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+            <div class="notif-dot"></div>
+          </div>
+          <div class="user-avatar-sm" style="font-size:.8rem" onclick="showSection('profile',null)">A</div>
+        </div>
+      </div>
+
+      <!-- ─── SECTIONS ─── -->
+      <div id="section-dashboard" class="page-content section-panel">
+
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-val"><span>12</span></div><div class="stat-lbl">Events Attended</div></div>
+          <div class="stat-card"><div class="stat-val"><span>R2</span></div><div class="stat-lbl">Repository Level</div></div>
+          <div class="stat-card"><div class="stat-val"><span>9</span></div><div class="stat-lbl">Projects Built</div></div>
+          <div class="stat-card"><div class="stat-val"><span>4</span></div><div class="stat-lbl">AI Matches</div></div>
+        </div>
+
+        <div class="dash-grid">
+          <!-- Latest News -->
+          <div class="dash-col-wide">
+            <div class="card">
+              <div class="card-body">
+                <div class="section-header">
+                  <div class="section-title">Latest News</div>
+                  <span class="see-all">See all</span>
+                </div>
+                <div class="news-item">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                    <div class="badge badge-orange">AI</div>
+                    <div class="news-title">New research published on AI ethics by ASG Community</div>
+                  </div>
+                  <div class="news-meta">2 hours ago · Shared by Dr. Ramesh Patil</div>
+                </div>
+                <div class="news-item">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                    <div class="badge badge-black">Event</div>
+                    <div class="news-title">Upcoming Corporate Hackathon: Future of AI announced</div>
+                  </div>
+                  <div class="news-meta">Yesterday · ASG Community</div>
+                </div>
+                <div class="news-item">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                    <div class="badge badge-green">Alumni</div>
+                    <div class="news-title">R4 Alumni mentorship program applications now open</div>
+                  </div>
+                  <div class="news-meta">2 days ago · SPOC Update</div>
+                </div>
+
+                <div class="section-header" style="margin-top:20px">
+                  <div class="section-title">Ask Listings</div>
+                  <span class="see-all">Post Ask</span>
+                </div>
+                <div class="ask-item">
+                  <div>
+                    <div class="ask-text">Seeking mentor for startup idea in EdTech</div>
+                    <div class="ask-author">Founder · Priya Desai</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Connect</button>
+                </div>
+                <div class="ask-item">
+                  <div>
+                    <div class="ask-text">Need graphic designer for product launch</div>
+                    <div class="ask-author">R3 Student · Jana Smith</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Connect</button>
+                </div>
+                <div class="ask-item">
+                  <div>
+                    <div class="ask-text">Looking for co-founder — ML background preferred</div>
+                    <div class="ask-author">Founder · Vikram Rao</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Connect</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <!-- Wall of Fame -->
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-body">
+                <div class="section-header">
+                  <div class="section-title">Wall of Fame</div>
+                  <span class="see-all">View all</span>
+                </div>
+                <div class="wof-item">
+                  <div class="wof-avatar">DR</div>
+                  <div>
+                    <div class="wof-name">Dr. Emily White</div>
+                    <div class="wof-desc">Awarded for outstanding research in AI applications</div>
+                  </div>
+                </div>
+                <div class="wof-item">
+                  <div class="wof-avatar" style="background:var(--black);color:var(--white)">TI</div>
+                  <div>
+                    <div class="wof-name">Tech Innovators Team</div>
+                    <div class="wof-desc">Won National Hackathon 2024 🏆</div>
+                  </div>
+                </div>
+                <div class="wof-item">
+                  <div class="wof-avatar" style="background:var(--orange-light);color:var(--orange)">MK</div>
+                  <div>
+                    <div class="wof-name">Meera Kulkarni</div>
+                    <div class="wof-desc">Secured ₹12L seed funding for AgriTech startup</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="card">
+              <div class="card-body">
+                <div class="section-header">
+                  <div class="section-title">Upcoming Events</div>
+                  <span class="see-all" onclick="showSection('events',null)">See all</span>
+                </div>
+                <div class="event-pill" onclick="showSection('events',null)">
+                  <div class="event-title">District-level Intellectual Meetup</div>
+                  <div class="event-date">Oct 25 · Linconn Community Hall</div>
+                  <div class="event-loc">Organised by ARL Community</div>
+                </div>
+                <div class="event-pill" onclick="showSection('events',null)">
+                  <div class="event-title">Corporate Hackathon: Future of AI</div>
+                  <div class="event-date">Nov 14 · Linconn Tech Park Auditorium</div>
+                  <div class="event-loc">Focus on real-world AI solutions</div>
+                </div>
+                <div class="event-pill" onclick="showSection('events',null)">
+                  <div class="event-title">Monthly ASG Community Meetup</div>
+                  <div class="event-date">Nov 05 · Online (Zoom)</div>
+                  <div class="event-loc">Network & discuss progress</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── AI AGENT ─── -->
+      <div id="section-ai-agent" class="page-content section-panel" style="display:none">
+        <div class="ai-hero">
+          <div class="ai-badge">
+            <span class="ai-badge-dot"></span>
+            AI Agent Active
+          </div>
+          <h2>AI Agent Interaction</h2>
+          <p>Share updates, ask for help, or log achievements. Your AI agent reads every input to build your digital persona and find the right connections.</p>
+        </div>
+
+        <!-- Input Methods -->
+        <div class="section-title">Choose Input Method</div>
+        <div class="input-method-grid" style="margin-bottom:20px">
+          <div class="input-method-card selected" onclick="selectMethod(this,'text-panel')">
+            <div class="method-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" style="color:var(--white)"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="method-name">Text</div>
+            <div class="method-desc">Type your update or ask</div>
+          </div>
+          <div class="input-method-card" onclick="selectMethod(this,'voice-panel')">
+            <div class="method-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="method-name">Voice</div>
+            <div class="method-desc">Record your voice message</div>
+          </div>
+          <div class="input-method-card" onclick="selectMethod(this,'video-panel')">
+            <div class="method-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg>
+            </div>
+            <div class="method-name">Video</div>
+            <div class="method-desc">Upload a short video clip</div>
+          </div>
+          <div class="input-method-card" onclick="selectMethod(this,'image-panel')">
+            <div class="method-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="method-name">Image</div>
+            <div class="method-desc">Upload a picture or screenshot</div>
+          </div>
+        </div>
+
+        <!-- Context Chips -->
+        <div class="section-title" style="margin-bottom:10px">What's the context?</div>
+        <div class="context-chips">
+          <div class="chip active">Day to Day</div>
+          <div class="chip">Achievement 🏆</div>
+          <div class="chip">Stuck / Challenge</div>
+          <div class="chip">Ask for Help</div>
+          <div class="chip">Failure / Learning</div>
+        </div>
+
+        <!-- Input Panels -->
+        <div id="text-panel" class="input-panel">
+          <textarea class="ai-text-input-area" placeholder="What's on your mind? Share an update, achievement, or anything you need help with..."></textarea>
+        </div>
+        <div id="voice-panel" class="input-panel" style="display:none">
+          <button class="voice-btn" id="voice-btn" onclick="toggleVoice(this)">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"/></svg>
+            Tap to Record Voice
+          </button>
+        </div>
+        <div id="video-panel" class="input-panel" style="display:none">
+          <div class="upload-zone">
+            <div class="upload-zone-icon"><svg width="32" height="32" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"/></svg></div>
+            <div class="upload-zone-text">Click or drag to upload video</div>
+            <div class="upload-zone-sub">MP4, MOV up to 100MB</div>
+          </div>
+        </div>
+        <div id="image-panel" class="input-panel" style="display:none">
+          <div class="upload-zone">
+            <div class="upload-zone-icon"><svg width="32" height="32" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg></div>
+            <div class="upload-zone-text">Click or drag to upload image</div>
+            <div class="upload-zone-sub">JPG, PNG, WEBP up to 10MB</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full btn-lg" style="margin-top:16px" onclick="submitInput()">
+          Submit to AI Agent →
+        </button>
+
+        <!-- Recent Matches -->
+        <div class="section-title" style="margin-top:28px">AI-Suggested Matches</div>
+        <div class="card">
+          <div class="card-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-2)">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="user-avatar-sm" style="background:var(--black)">MK</div>
+                <div>
+                  <div style="font-size:.88rem;font-weight:700">Meera Kulkarni — R4 Alumni</div>
+                  <div style="color:var(--gray-4);font-size:.72rem;margin-top:2px">EdTech expert · 5 yrs experience</div>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm">Connect</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="user-avatar-sm" style="background:var(--orange)">RV</div>
+                <div>
+                  <div style="font-size:.88rem;font-weight:700">Rohit Verma — Mentor</div>
+                  <div style="color:var(--gray-4);font-size:.72rem;margin-top:2px">AI/ML specialist · IIT Bombay alumni</div>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-sm">Connect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── EVENTS ─── -->
+      <div id="section-events" class="page-content section-panel" style="display:none">
+        <div class="events-filter">
+          <button class="filter-btn active">All Events</button>
+          <button class="filter-btn">Meetup</button>
+          <button class="filter-btn">Hackathon</button>
+          <button class="filter-btn">Quiz</button>
+          <button class="filter-btn">Open Day</button>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-top">
+            <span class="event-card-type">Meetup</span>
+            <span class="event-card-date-chip">Oct 25, 2024</span>
+          </div>
+          <div class="event-card-body">
+            <div class="event-card-title">District-level Intellectual Meetup</div>
+            <div class="event-card-desc">A district-wide gathering bringing together the brightest minds in AI innovation, startup culture, and entrepreneurship.</div>
+            <div style="display:flex;gap:8px">
+              <div class="badge badge-orange">R1–R5 Open</div>
+              <div class="badge badge-gray">200 seats</div>
+            </div>
+          </div>
+          <div class="event-card-footer">
+            <div class="event-card-loc">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+              Linconn Community Hall
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showSection('event-register',null)">Register →</button>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-top">
+            <span class="event-card-type">Hackathon</span>
+            <span class="event-card-date-chip">Nov 14–15, 2024</span>
+          </div>
+          <div class="event-card-body">
+            <div class="event-card-title">Corporate Hackathon: Future of AI</div>
+            <div class="event-card-desc">Build real-world AI solutions for enterprise challenges. Sponsored by top tech companies. Prize pool: ₹5 Lakh.</div>
+            <div style="display:flex;gap:8px">
+              <div class="badge badge-black">24 Hours</div>
+              <div class="badge badge-orange">Team of 2–4</div>
+              <div class="badge badge-green">₹5L Prize</div>
+            </div>
+          </div>
+          <div class="event-card-footer">
+            <div class="event-card-loc">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+              Linconn Tech Park Auditorium
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showSection('event-register',null)">Register →</button>
+          </div>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-top">
+            <span class="event-card-type">Meetup</span>
+            <span class="event-card-date-chip">Nov 5, 2024</span>
+          </div>
+          <div class="event-card-body">
+            <div class="event-card-title">Monthly ASG Community Meetup</div>
+            <div class="event-card-desc">Regular monthly meetup for ASG members to discuss progress, network and build connections across institutions.</div>
+            <div style="display:flex;gap:8px">
+              <div class="badge badge-gray">Online · Zoom</div>
+              <div class="badge badge-green">Free Entry</div>
+            </div>
+          </div>
+          <div class="event-card-footer">
+            <div class="event-card-loc">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg>
+              Virtual (Zoom link on registration)
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="showSection('event-register',null)">Register →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── COMMITTEES ─── -->
+      <div id="section-committees" class="page-content section-panel" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-body">
+                <div class="section-header">
+                  <div class="section-title">College Committees</div>
+                  <button class="btn btn-primary btn-sm" onclick="">+ Add</button>
+                </div>
+                <div class="committee-item">
+                  <div>
+                    <div class="committee-name">Academic Council</div>
+                    <div class="committee-dept">Faculty & Student Reps</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Visit</button>
+                </div>
+                <div class="committee-item">
+                  <div>
+                    <div class="committee-name">Research & Development</div>
+                    <div class="committee-dept">R&D Projects · 12 members</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Visit</button>
+                </div>
+                <div class="committee-item">
+                  <div>
+                    <div class="committee-name">Anti-Ragging Committee</div>
+                    <div class="committee-dept">Student Safety & Welfare</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Visit</button>
+                </div>
+                <div class="committee-item">
+                  <div>
+                    <div class="committee-name">Examination Board</div>
+                    <div class="committee-dept">Academics · 8 members</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm">Visit</button>
+                </div>
+                <button class="btn btn-secondary btn-full" style="margin-top:8px">Manage Committees</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card">
+              <div class="card-body">
+                <div class="section-title">Talent Repositories (R1–R5)</div>
+                <div style="color:var(--gray-4);font-size:.78rem;margin-bottom:16px">Students tagged in ecosystem talent pools by skill and role</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <div class="repo-card">
+                    <div>
+                      <div class="repo-label">R1 Students</div>
+                      <div class="repo-sub">Content Creators · 42 members</div>
+                    </div>
+                    <div class="repo-tag">R1</div>
+                  </div>
+                  <div class="repo-card">
+                    <div>
+                      <div class="repo-label">R2 Students</div>
+                      <div class="repo-sub">Achievers · 35 members</div>
+                    </div>
+                    <div class="repo-tag" style="background:var(--black)">R2</div>
+                  </div>
+                  <div class="repo-card">
+                    <div>
+                      <div class="repo-label">R3 Students</div>
+                      <div class="repo-sub">Organisers · 28 members</div>
+                    </div>
+                    <div class="repo-tag">R3</div>
+                  </div>
+                  <div class="repo-card">
+                    <div>
+                      <div class="repo-label">R4 Alumni</div>
+                      <div class="repo-sub">Alumni Network · 60 members</div>
+                    </div>
+                    <div class="repo-tag" style="background:var(--black)">R4</div>
+                  </div>
+                  <div class="repo-card">
+                    <div>
+                      <div class="repo-label">R5 Faculty / SPOC</div>
+                      <div class="repo-sub">College Admins · 15 members</div>
+                    </div>
+                    <div class="repo-tag">R5</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── EVENT REGISTRATION ─── -->
+      <div id="section-event-register" class="page-content section-panel" style="display:none">
+        <div class="reg-hero">
+          <div class="reg-event-badge">📅 Corporate Hackathon: Future of AI</div>
+          <h2>Event Registration</h2>
+          <p>Fill in the details below to confirm your spot</p>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Event Name</label>
+              <input class="form-input" value="Corporate Hackathon: Future of AI" readonly style="background:var(--gray-1)"/>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div class="form-group">
+                <label class="form-label">Your Full Name</label>
+                <input class="form-input" placeholder="Your full name"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input class="form-input" type="email" placeholder="your@email.com"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Team Participation</label>
+              <div class="team-toggle">
+                <button class="team-toggle-btn active" onclick="setTeamMode(this,'individual')">Register as Individual</button>
+                <button class="team-toggle-btn" onclick="setTeamMode(this,'team')">Register as Team</button>
+              </div>
+            </div>
+
+            <div id="team-fields" style="display:none">
+              <div class="form-group">
+                <label class="form-label">Team Name</label>
+                <input class="form-input" placeholder="e.g. Team Falcons"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Team Code (if joining existing team)</label>
+                <input class="form-input" placeholder="Optional — leave blank to create new team"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">What are you hoping to build?</label>
+              <textarea class="form-input" placeholder="Briefly describe your idea or area of interest..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">How did you hear about this event?</label>
+              <select class="form-input">
+                <option>ASG Community Post</option>
+                <option>College Notice Board</option>
+                <option>Social Media</option>
+                <option>Friend/Colleague</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:8px">
+              <button class="btn btn-secondary" style="flex:1" onclick="showSection('events',null)">← Back</button>
+              <button class="btn btn-primary" style="flex:2" onclick="showSuccessToast('Registration submitted! Check your email.')">Confirm Registration →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── HOST EVENT ─── -->
+      <div id="section-event-host" class="page-content section-panel" style="display:none">
+        <div style="background:var(--black);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px">
+          <div style="display:inline-flex;align-items:center;gap:6px;background:var(--orange-gradient-soft);border:1px solid rgba(255,61,0,.35);color:var(--orange-mid);font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:10px">🏫 College Tool</div>
+          <h2 style="color:var(--white);font-size:1.2rem;font-weight:800;margin-bottom:4px">Host a New Event</h2>
+          <p style="color:rgba(255,255,255,.5);font-size:.8rem">Tools for colleges to host temporary events, manage QR-based participant flow, and run online judging.</p>
+        </div>
+
+        <div class="host-tabs">
+          <button class="host-tab-btn active" onclick="switchHostTab(this,'details')">Event Details</button>
+          <button class="host-tab-btn" onclick="switchHostTab(this,'flow')">Participant Flow</button>
+          <button class="host-tab-btn" onclick="switchHostTab(this,'judging')">Judging Setup</button>
+        </div>
+
+        <div id="host-details" class="host-panel">
+          <div class="card">
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div class="form-group" style="grid-column:span 2">
+                  <label class="form-label">Event Name</label>
+                  <input class="form-input" placeholder="e.g. AI Innovation Hackathon 2024"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date</label>
+                  <input class="form-input" type="date"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Time</label>
+                  <input class="form-input" type="time"/>
+                </div>
+                <div class="form-group" style="grid-column:span 2">
+                  <label class="form-label">Location / Venue</label>
+                  <input class="form-input" placeholder="Physical address or 'Online (Zoom)'"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Event Type</label>
+                  <select class="form-input">
+                    <option>Hackathon</option>
+                    <option>Meetup</option>
+                    <option>Quiz</option>
+                    <option>Open Day</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Max Participants</label>
+                  <input class="form-input" type="number" placeholder="e.g. 200"/>
+                </div>
+                <div class="form-group" style="grid-column:span 2">
+                  <label class="form-label">Event Description</label>
+                  <textarea class="form-input" placeholder="Describe the event, its purpose, and what participants can expect..."></textarea>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-full" onclick="switchHostTabByName('flow')">Continue: Participant Flow →</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="host-flow" class="host-panel" style="display:none">
+          <div class="card">
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Participant Flow Management</label>
+              </div>
+              <div class="option-row">
+                <div class="option-row-left">
+                  <div class="option-title">QR Code Based Entry</div>
+                  <div class="option-desc">Generate dynamic QR codes for check-in. Each scan records attendance with timestamp.</div>
+                </div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on');this.querySelector('.toggle-knob').style.transform=this.classList.contains('on')?'translateX(20px)':''">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              <div class="option-row">
+                <div class="option-row-left">
+                  <div class="option-title">NAAC Geo-tagging</div>
+                  <div class="option-desc">Capture submission GPS coordinates for NAAC documentation and compliance.</div>
+                </div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on')">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              <div class="option-row">
+                <div class="option-row-left">
+                  <div class="option-title">Waitlist Management</div>
+                  <div class="option-desc">Auto-add registrations to waitlist when seats are full. Notify on cancellations.</div>
+                </div>
+                <div class="toggle-switch" onclick="this.classList.toggle('on')">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              <div class="option-row">
+                <div class="option-row-left">
+                  <div class="option-title">AI Team Formation</div>
+                  <div class="option-desc">Let AI agent mix-and-match participants into balanced teams based on skill profiles.</div>
+                </div>
+                <div class="toggle-switch" onclick="this.classList.toggle('on')">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:8px">
+                <button class="btn btn-secondary" style="flex:1" onclick="switchHostTabByName('details')">← Back</button>
+                <button class="btn btn-primary" style="flex:2" onclick="switchHostTabByName('judging')">Continue: Judging →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="host-judging" class="host-panel" style="display:none">
+          <div class="card">
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Online Judging Method</label>
+                <select class="form-input">
+                  <option>Online Judging Portal (Human Judges)</option>
+                  <option>AI Judge (Automated Scoring)</option>
+                  <option>Hybrid (Human + AI)</option>
+                </select>
+              </div>
+              <div class="option-row">
+                <div class="option-row-left">
+                  <div class="option-title">AI Anti-Cheat Analysis</div>
+                  <div class="option-desc">AI evaluates submission authenticity score (0–10) automatically.</div>
+                </div>
+                <div class="toggle-switch on" onclick="this.classList.toggle('on')">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              <div class="option-row">
+                <div class="option-row-left">
+                  <div class="option-title">Public Leaderboard</div>
+                  <div class="option-desc">Display live scores to all participants during judging phase.</div>
+                </div>
+                <div class="toggle-switch" onclick="this.classList.toggle('on')">
+                  <div class="toggle-knob"></div>
+                </div>
+              </div>
+              <div class="form-group" style="margin-top:4px">
+                <label class="form-label">Judge Invitation (email, comma separated)</label>
+                <input class="form-input" placeholder="judge1@example.com, judge2@example.com"/>
+              </div>
+              <div style="display:flex;gap:10px">
+                <button class="btn btn-secondary" style="flex:1" onclick="switchHostTabByName('flow')">← Back</button>
+                <button class="btn btn-primary" style="flex:2" onclick="showSuccessToast('Event created! QR codes being generated...')">Publish Event 🚀</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── PROFILE ─── -->
+      <div id="section-profile" class="page-content section-panel" style="display:none">
+        <div class="profile-header">
+          <div class="profile-avatar">A</div>
+          <div>
+            <div class="profile-name">Arjun Sharma</div>
+            <div class="profile-role">GH Raisoni College · Computer Science</div>
+            <div class="profile-badges">
+              <div class="badge badge-orange">R2 Student</div>
+              <div class="badge" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:.68rem;padding:3px 10px;border-radius:100px">Founder</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-header">Personal Details</div>
+          <div class="profile-row"><div class="profile-row-label">Email</div><div class="profile-row-val">arjun@college.edu</div></div>
+          <div class="profile-row"><div class="profile-row-label">Phone</div><div class="profile-row-val">+91 98765 43210</div></div>
+          <div class="profile-row"><div class="profile-row-label">Category</div><div class="profile-row-val">Student</div></div>
+          <div class="profile-row"><div class="profile-row-label">Department</div><div class="profile-row-val">Computer Science</div></div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-header">Ecosystem Roles</div>
+          <div class="profile-row"><div class="profile-row-label">Primary Role</div><div class="profile-row-val">Founder + R2 Student</div></div>
+          <div class="profile-row"><div class="profile-row-label">Repository Status</div><div class="profile-row-val"><span class="badge badge-green">Approved</span></div></div>
+          <div class="profile-row"><div class="profile-row-label">Digital Persona</div><div class="profile-row-val" style="color:var(--orange)">AI-Generated ✓</div></div>
+        </div>
+
+        <button class="btn btn-dark btn-full btn-lg" style="margin-top:8px" onclick="showSection('login-go',null)">Sign Out</button>
+      </div>
+
+    </div><!-- end main-content -->
+  </div><!-- end shell -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-items">
+      <button class="bn-item active" onclick="showSection('dashboard',this,'bn')" id="bn-dashboard">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        Home
+      </button>
+      <button class="bn-item" onclick="showSection('events',this,'bn')" id="bn-events">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+        Events
+      </button>
+      <button class="bn-item" onclick="showSection('ai-agent',this,'bn')" id="bn-ai">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        AI Agent
+      </button>
+      <button class="bn-item" onclick="showSection('profile',this,'bn')" id="bn-profile">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+        Profile
+      </button>
+    </div>
+  </nav>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--black);color:var(--white);
+  padding:12px 24px;border-radius:100px;
+  font-size:.85rem;font-weight:600;
+  opacity:0;transition:all .3s;z-index:999;
+  white-space:nowrap;border-left:3px solid var(--orange-end);
+"></div>
+
+<script>
+// ── Navigation ──
+const sectionTitles = {
+  'dashboard':'Dashboard',
+  'ai-agent':'AI Agent',
+  'events':'Events & Meetups',
+  'committees':'Committees',
+  'event-register':'Event Registration',
+  'event-host':'Host Event',
+  'profile':'My Profile'
+};
+
+function showSection(id, clickedNavItem, navType) {
+  // Hide all panels
+  document.querySelectorAll('.section-panel').forEach(p => p.style.display = 'none');
+  
+  // Show target
+  const target = document.getElementById('section-' + id);
+  if (target) target.style.display = 'block';
+  
+  // Update title
+  if (sectionTitles[id]) document.getElementById('topbar-title').textContent = sectionTitles[id];
+
+  // Update sidebar nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (clickedNavItem && navType !== 'bn') clickedNavItem.classList.add('active');
+
+  // Update bottom nav
+  document.querySelectorAll('.bn-item').forEach(n => n.classList.remove('active'));
+  const bnMap = {'dashboard':'bn-dashboard','events':'bn-events','ai-agent':'bn-ai','profile':'bn-profile'};
+  if (bnMap[id]) document.getElementById(bnMap[id])?.classList.add('active');
+
+  // Close sidebar on mobile
+  closeSidebar();
+
+  // Scroll top
+  document.querySelector('.main-content')?.scrollTo(0,0);
+}
+
+// ── Login ──
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register'));
+  });
+  document.getElementById('lf-login').classList.toggle('active', tab==='login');
+  document.getElementById('lf-register').classList.toggle('active', tab==='register');
+}
+
+function goToApp() {
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+}
+
+// ── Sidebar ──
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+// ── AI Agent ──
+function selectMethod(card, panelId) {
+  document.querySelectorAll('.input-method-card').forEach(c => {
+    c.classList.remove('selected');
+    c.querySelector('.method-icon').style.background = '';
+    const svg = c.querySelector('svg');
+    if (svg) svg.style.color = '';
+  });
+  card.classList.add('selected');
+
+  document.querySelectorAll('.input-panel').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById(panelId);
+  if (panel) panel.style.display = 'block';
+}
+
+function toggleVoice(btn) {
+  btn.classList.toggle('recording');
+  btn.textContent = btn.classList.contains('recording') ? '⏹ Stop Recording' : '🎙 Tap to Record Voice';
+}
+
+function submitInput() {
+  showSuccessToast('Input submitted to AI Agent! Processing...');
+}
+
+// ── Chips ──
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', function() {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ── Events filter ──
+document.querySelectorAll('.filter-btn').forEach(b => {
+  b.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// ── Team toggle ──
+function setTeamMode(btn, mode) {
+  document.querySelectorAll('.team-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('team-fields').style.display = mode === 'team' ? 'block' : 'none';
+}
+
+// ── Host Event tabs ──
+function switchHostTab(btn, panelId) {
+  document.querySelectorAll('.host-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.host-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('host-' + panelId).style.display = 'block';
+}
+function switchHostTabByName(panelId) {
+  const tabs = document.querySelectorAll('.host-tab-btn');
+  const map = {details:0,flow:1,judging:2};
+  tabs.forEach(b => b.classList.remove('active'));
+  tabs[map[panelId]]?.classList.add('active');
+  document.querySelectorAll('.host-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('host-' + panelId).style.display = 'block';
+}
+
+// ── Toast ──
+function showSuccessToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.style.opacity = '1';
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(20px)';
+  }, 3000);
+}
+</script>
+</body>
+</html>
